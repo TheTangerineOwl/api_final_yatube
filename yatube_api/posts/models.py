@@ -1,13 +1,13 @@
+"""Модели для сущностей блога."""
 from django.contrib.auth import get_user_model
 from django.db import models
 
+# Получение встроенной модели пользователя.
 User = get_user_model()
-
-# Group, Follow(user, following)
 
 
 class Group(models.Model):
-    """Группа постов."""
+    """Сообщество для постов."""
 
     title = models.CharField(max_length=200)
     slug = models.SlugField(unique=True)
@@ -19,6 +19,8 @@ class Group(models.Model):
 
 
 class Follow(models.Model):
+    """Подписка пользователя на другого."""
+
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE, related_name="follower"
@@ -29,13 +31,18 @@ class Follow(models.Model):
     )
 
     def __str__(self):
+        """Подписка представляется именем пользователя."""
         return self.following
 
     class Meta:
+        """Метаданные модели подписки."""
+
         unique_together = ('user', 'following')
 
 
 class Post(models.Model):
+    """Модель поста в блоге."""
+
     text = models.TextField()
     pub_date = models.DateTimeField('Дата публикации', auto_now_add=True)
     author = models.ForeignKey(
@@ -47,10 +54,13 @@ class Post(models.Model):
     )
 
     def __str__(self):
+        """Пост представляется своим текстом."""
         return self.text
 
 
 class Comment(models.Model):
+    """Модель комментария к посту."""
+
     author = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='comments')
     post = models.ForeignKey(

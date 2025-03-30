@@ -1,24 +1,23 @@
+"""Сериализаторы приложения API."""
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 
 from posts.models import Comment, Post, Follow, Group, User
 
 
-class GroupListSerializer(serializers.ModelSerializer):
+class GroupSerializer(serializers.ModelSerializer):
+    """Сериализатор сообщества."""
 
     class Meta:
+        """Метаданные сериализатора."""
+
         fields = '__all__'
         model = Group
 
 
-class GroupDetailSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        fields = ('title', 'slug', 'description')
-        model = Group
-
-
 class FollowSerializer(serializers.ModelSerializer):
+    """Сериализатор подписки."""
+
     user = serializers.ReadOnlyField(source='user.username')
     following = serializers.SlugRelatedField(
         slug_field='username',
@@ -30,12 +29,15 @@ class FollowSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
+        """Метаданные сериализатора."""
+
         fields = '__all__'
         model = Follow
 
     def validate(self, data):
-        user = self.request.user
-        following = data.following
+        """Валидация данных подписки."""
+        user = self.context['request'].user
+        following = data['following']
         if user == following:
             raise serializers.ValidationError(
                 "Нельзя подписаться на самого себя!")
@@ -46,19 +48,27 @@ class FollowSerializer(serializers.ModelSerializer):
 
 
 class PostSerializer(serializers.ModelSerializer):
+    """Сериализатор поста."""
+
     author = SlugRelatedField(slug_field='username', read_only=True)
 
     class Meta:
+        """Метаданные сериализатора."""
+
         fields = '__all__'
         model = Post
 
 
 class CommentSerializer(serializers.ModelSerializer):
+    """Сериализатор комментария к записи."""
+
     author = serializers.SlugRelatedField(
         read_only=True, slug_field='username'
     )
     post = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
+        """Метаданные комментария."""
+
         fields = '__all__'
         model = Comment

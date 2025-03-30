@@ -1,3 +1,4 @@
+"""Представления для API."""
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import (ModelViewSet,
@@ -5,24 +6,30 @@ from rest_framework.viewsets import (ModelViewSet,
                                      GenericViewSet)
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.mixins import CreateModelMixin, ListModelMixin
+from rest_framework.filters import SearchFilter
 
 from posts.models import Post, Group, Comment, Follow
 from .permissions import AuthorOrReadOnly
-from .serializers import (PostSerializer, GroupListSerializer,
-                          GroupDetailSerializer, CommentSerializer,
-                          FollowSerializer)
+from .serializers import (PostSerializer, GroupSerializer,
+                          CommentSerializer, FollowSerializer)
 
 
 class FollowViewSet(CreateModelMixin, ListModelMixin,
                     GenericViewSet):
+    """Представление подписки."""
+
     queryset = Follow.objects.all()
     serializer_class = FollowSerializer
     permission_classes = (IsAuthenticated, )
+    filter_backends = (SearchFilter,)
+    search_fields = ('following__username', )
 
     def get_queryset(self):
+        """Получение подписок для текущего пользователя."""
         return Follow.objects.filter(user=self.request.user)
 
     def perform_create(self, serializer):
+        """При создании объекта подписки через POST-запрос."""
         serializer.save(user=self.request.user)
 
 
@@ -43,15 +50,12 @@ class GroupViewSet(ReadOnlyModelViewSet):
     """Представление группы постов (только для чтения)."""
 
     queryset = Group.objects.all()
-
-    def get_serializer_class(self):
-        if self.action == 'list':
-            return GroupListSerializer
-        return GroupDetailSerializer
+    serializer_class = GroupSerializer
 
 
 class CommentViewSet(ModelViewSet):
     """Представление комментария к посту."""
+
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
     permission_classes = (AuthorOrReadOnly, )
