@@ -1,3 +1,4 @@
+from rest_framework_nested import routers
 from rest_framework.routers import DefaultRouter
 
 from django.urls import include, path
@@ -6,9 +7,15 @@ from .views import GroupViewSet, FollowViewSet, PostViewSet, CommentViewSet
 
 
 router = DefaultRouter()
-router.register('groups', GroupViewSet)
+router.register(r'follow', FollowViewSet)
+router.register(r'groups', GroupViewSet)
+router.register(r'posts', PostViewSet)
+
+posts_router = routers.NestedDefaultRouter(router, r'posts', lookup='post')
+posts_router.register(r'comments', CommentViewSet, basename='post-comments')
 
 urlpatterns = [
+    path('v1/', include(posts_router.urls)),
     path('v1/', include(router.urls)),
     path('v1/', include('djoser.urls.jwt')),
 ]
@@ -24,6 +31,6 @@ urlpatterns += [
     # path('v1/posts/<int:id>/', ...), # GET PUT PATCH DEL               DETAIL
     # path('v1/posts/', ...), # get post                               LIST
     # path('v1/jwt/create/', ...),        auth/jwt/create
-    # path('v1/jwt/refresh', ...),          auth/jwt/refresh
-    # path('v1/jwt/verify', ...)
+    # path('v1/jwt/refresh/', ...),          auth/jwt/refresh
+    # path('v1/jwt/verify/', ...)
 ]

@@ -31,6 +31,9 @@ class Follow(models.Model):
     def __str__(self):
         return self.following
 
+    class Meta:
+        unique_together = ('user', 'following')
+
 
 class Post(models.Model):
     text = models.TextField()
@@ -40,7 +43,7 @@ class Post(models.Model):
     image = models.ImageField(
         upload_to='posts/', null=True, blank=True)
     group = models.ForeignKey(
-        Group, null=True, blank=True
+        Group, on_delete=models.CASCADE, null=True, blank=True
     )
 
     def __str__(self):
